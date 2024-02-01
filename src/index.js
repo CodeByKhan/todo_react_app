@@ -12,7 +12,27 @@ app.use(bodyParser.json());
 
 // Welcome message for the root path
 app.get('/', (req, res) => {
-  res.send('Welcome to the ToDo app! Use /tasks to manage your tasks.');
+  res.send(`
+    <html>
+      <head>
+        <style>
+          @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+
+          .revolving-name {
+            font-size: 24px;
+            font-weight: bold;
+            animation: rotate 5s infinite linear;
+          }
+        </style>
+      </head>
+      <body>
+        <p class="revolving-name">Welcome to the ToDo app, Kajal!</p>
+      </body>
+    </html>
+  `);
 });
 
 // Get all tasks
