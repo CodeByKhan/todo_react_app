@@ -10,6 +10,11 @@ let tasks = [];
 // Middleware to parse JSON
 app.use(bodyParser.json());
 
+// Welcome message for the root path
+app.get('/', (req, res) => {
+  res.send('Welcome to the ToDo app! Use /tasks to manage your tasks.');
+});
+
 // Get all tasks
 app.get('/tasks', (req, res) => {
   res.json(tasks);
@@ -40,5 +45,8 @@ app.delete('/tasks/:index', (req, res) => {
 
 // Start the server
 app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
+
   console.log(`Server is running at http://localhost:${port}`);
 });
