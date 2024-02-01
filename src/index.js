@@ -10,29 +10,12 @@ let tasks = [];
 // Middleware to parse JSON
 app.use(bodyParser.json());
 
+// Serve static files (CSS and client-side JavaScript)
+app.use(express.static('public'));
+
 // Welcome message for the root path
 app.get('/', (req, res) => {
-  res.send(`
-    <html>
-      <head>
-        <style>
-          @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-
-          .revolving-name {
-            font-size: 24px;
-            font-weight: bold;
-            animation: rotate 5s infinite linear;
-          }
-        </style>
-      </head>
-      <body>
-        <p class="revolving-name">Welcome to the ToDo app, Kajal!</p>
-      </body>
-    </html>
-  `);
+  res.sendFile(__dirname + '/public/index.html');
 });
 
 // Get all tasks
@@ -48,6 +31,7 @@ app.post('/tasks', (req, res) => {
   }
 
   tasks.push(task);
+  io.emit('taskAdded', task); // Notify clients about the new task
   res.json({ success: true, message: 'Task added successfully' });
 });
 
@@ -59,11 +43,27 @@ app.delete('/tasks/:index', (req, res) => {
     return res.status(400).json({ error: 'Invalid index' });
   }
 
-  tasks.splice(index, 1);
+  const deletedTask = tasks.splice(index, 1)[0];
+  io.emit('taskDeleted', deletedTask); // Notify clients about the deleted task
   res.json({ success: true, message: 'Task deleted successfully' });
 });
 
 // Start the server
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
+});
+
+// Set up socket.io for real-time communication
+const io = require('socket.io')(server);
+
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  // Send existing tasks to the new user
+  socket.emit('initialTasks', tasks);
+
+  // Handle disconnection
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
 });
